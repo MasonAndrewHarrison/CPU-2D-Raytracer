@@ -4,8 +4,8 @@ import "core:fmt"
 import "core:os"
 import SDL "vendor:sdl3"
 
-WIDTH :: 1920/2
-HEIGHT :: 1080/2
+WIDTH :: 1920/1.5
+HEIGHT :: 1080/1.5
 
 main :: proc() {
 
@@ -18,20 +18,21 @@ main :: proc() {
     stateInit(WIDTH, HEIGHT)
     defer stateFree()
 
+    pixels: [dynamic]u32
+    resize(&pixels, state.width * state.height)
+    defer delete(pixels)
+
     for state.running {
         eventHandling()
 
-        for y in 0..<state.height {
-            for x in 0..<state.width {
-                state.pixels[y * state.width + x] = 0xFF00_00FF
-            }
-        }
+        frameBufferDrawer(pixels)
 
-        SDL.UpdateTexture(state.texture, nil, raw_data(state.pixels), state.width * size_of(u32))
+        SDL.UpdateTexture(state.texture, nil, raw_data(pixels), state.width * size_of(u32))
 
         SDL.RenderClear(state.renderer)
         SDL.RenderTexture(state.renderer, state.texture, nil, nil)
         SDL.RenderPresent(state.renderer)
     }
+
 
 }  

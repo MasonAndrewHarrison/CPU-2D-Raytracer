@@ -8,7 +8,6 @@ State :: struct {
     window: ^SDL.Window,
     renderer: ^SDL.Renderer,
     texture: ^SDL.Texture,
-    pixels: [dynamic]u32,
     width: i32,
     height: i32,
 }
@@ -45,12 +44,10 @@ stateInit :: proc(width: i32 = 600, height: i32 = 400) {
         height   = height,
     }
 
-    resize(&state.pixels, width * height)
 }
 
 stateFree :: proc() {
     SDL.DestroyWindow(state.window)
     SDL.DestroyRenderer(state.renderer)
     SDL.DestroyTexture(state.texture)
-    delete(state.pixels)
 }
