@@ -1,64 +1,37 @@
 package main
 
 import "core:fmt"
+import "core:os"
 import SDL "vendor:sdl3"
 
-WIDTH :: 640
-HEIGHT :: 480
+WIDTH :: 1920/2
+HEIGHT :: 1080/2
 
 main :: proc() {
+
+    os.set_env("SDL_VIDEODRIVER", "wayland,x11")
 
     if !SDL.Init({.VIDEO}) {
         fmt.eprintln("SDL Launch Failed: ", SDL.GetError())
     }
     defer SDL.Quit()
+    stateInit(WIDTH, HEIGHT)
+    defer stateFree()
 
+    for state.running {
+        eventHandling()
 
-    window := SDL.CreateWindow("CPU Raytracer", WIDTH, HEIGHT, {})
-    defer SDL.DestroyWindow(window)
-
-    renderer := SDL.CreateRenderer(window, nil)
-    defer SDL.DestroyRenderer(renderer)
-
-    texture := SDL.CreateTexture(
-        renderer,
-        .RGBA8888,
-        .STREAMING,
-        WIDTH, HEIGHT,
-    )
-    defer SDL.DestroyTexture(texture)
-
-
-    pixels: [dynamic]u32
-    resize(&pixels, WIDTH * HEIGHT)
-    defer delete(pixels)
-
-    running := true
-    for running {
-        event: SDL.Event
-        for SDL.PollEvent(&event) {
-            #partial switch event.type {
-            case .QUIT:
-                running = false
-            case .KEY_DOWN:
-                if event.key.key == SDL.K_ESCAPE {
-                    running = false
-                }
+        for y in 0..<state.height {
+            for x in 0..<state.width {
+                state.pixels[y * state.width + x] = 0xFF00_00FF
             }
         }
 
-        for y in 0..<HEIGHT {
-            for x in 0..<WIDTH {
-                pixels[y * WIDTH + x] = 0xFF00_00FF
-            }
-        }
+        SDL.UpdateTexture(state.texture, nil, raw_data(state.pixels), state.width * size_of(u32))
 
-
-        SDL.UpdateTexture(texture, nil, raw_data(pixels), WIDTH * size_of(u32))
-
-        SDL.RenderClear(renderer)
-        SDL.RenderTexture(renderer, texture, nil, nil)
-        SDL.RenderPresent(renderer)
+        SDL.RenderClear(state.renderer)
+        SDL.RenderTexture(state.renderer, state.texture, nil, nil)
+        SDL.RenderPresent(state.renderer)
     }
 
 }  

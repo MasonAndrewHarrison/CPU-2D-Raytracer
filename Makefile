@@ -2,4 +2,4 @@
 
 
 run: 
-	odin run main.odin -file
+	odin run ../CPU-2D-Raytracer 
