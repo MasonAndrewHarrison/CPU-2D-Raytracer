@@ -3,17 +3,46 @@ package main
 import "core:fmt"
 import SDL "vendor:sdl3"
 
-eventHandling :: proc() {
-    event: SDL.Event
-    for SDL.PollEvent(&event) {
+eventHandling :: proc(event: ^SDL.Event, window: ^SDL.Window, deltaTime: f64) {
+    for SDL.PollEvent(event) {
         #partial switch event.type {
         case .QUIT:
             state.running = false
         case .KEY_DOWN:
-            if event.key.key == SDL.K_ESCAPE {
-                state.running = false
-            }
-        }
+            eventButtonPress(event)
+        case .MOUSE_MOTION:
+            eventMouseMotion(event)
+        case .MOUSE_WHEEL:
+            eventMouseWheel(event)
+        case .WINDOW_RESIZED:
+            SDL.GetWindowSizeInPixels(window, &state.width, &state.height)
+        }     
     }
+    eventButtomHold(0)
+
+}
+
+eventButtonPress :: proc(event: ^SDL.Event){
+
+    switch (event.key.key){
+
+        case SDL.K_ESCAPE:
+            state.running = false
+
+        case SDL.K_TAB:
+            state.topDown = !state.topDown
+
+    }
+}
+
+eventMouseMotion :: proc(event: ^SDL.Event){
+
+    mouseButtonFlags:= SDL.GetMouseState(&state.mouseX, &state.mouseY)
+}
+
+eventMouseWheel :: proc(event: ^SDL.Event){
+}
+
+eventButtomHold :: proc(deltaTime: f64){
 
 }

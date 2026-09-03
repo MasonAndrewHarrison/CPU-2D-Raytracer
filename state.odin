@@ -7,20 +7,22 @@ State :: struct {
     running: bool,
     width: i32,
     height: i32,
+    topDown: bool,
+    mouseX: f32,
+    mouseY: f32,
 }
-
 state: State
 
 
 stateInit :: proc(width: i32 = 600, height: i32 = 400) {
 
-    width: i32 = WIDTH
-    height: i32 = HEIGHT
-
     state = {
         running  = true,
-        width    = width,
-        height   = height,
+        width    = WIDTH,
+        height   = HEIGHT,
+        topDown  = false,
+        mouseX   = 0,
+        mouseY   = 0,
     }
 
 }

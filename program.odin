@@ -9,9 +9,10 @@ Program :: struct {
     window: ^SDL.Window,
     renderer: ^SDL.Renderer,
     texture: ^SDL.Texture,
+    event: SDL.Event,
 }
 
-
+@(require_results)
 programInit :: proc(title: string) -> (program: Program) {
 
     os.set_env("SDL_VIDEODRIVER", "wayland,x11")
@@ -44,10 +45,15 @@ programMainLoop :: proc(program: ^Program) {
     resize(&pixels, state.width * state.height)
     defer delete(pixels)
 
-    for state.running {
-        eventHandling()
+    worldGrid: [dynamic]u16
+    resize(&worldGrid, 1028* 1028)
+    defer delete(worldGrid)
 
-        frameBufferDrawer(pixels)
+    for state.running {   
+        eventHandling(&program.event, program.window, 0)
+
+        if state.topDown == true { topDownDrawer(pixels) }
+        else { sideViewDrawer(pixels) }
 
         SDL.UpdateTexture(program.texture, nil, raw_data(pixels), state.width * size_of(u32))
 
