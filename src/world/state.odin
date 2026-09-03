@@ -1,7 +1,4 @@
-package main
-
-import SDL "vendor:sdl3"
-import "core:fmt"
+package world
 
 State :: struct {
     running: bool,
@@ -18,8 +15,8 @@ stateInit :: proc(width: i32 = 600, height: i32 = 400) {
 
     state = {
         running  = true,
-        width    = WIDTH,
-        height   = HEIGHT,
+        width    = width,
+        height   = height,
         topDown  = false,
         mouseX   = 0,
         mouseY   = 0,

@@ -3,7 +3,8 @@ package main
 import SDL "vendor:sdl3"
 import "core:fmt"
 import "core:os"
-
+import "graphics"
+import "world"
 
 Program :: struct {
     window: ^SDL.Window,
@@ -14,6 +15,8 @@ Program :: struct {
 
 @(require_results)
 programInit :: proc(title: string) -> (program: Program) {
+
+    state := &world.state
 
     os.set_env("SDL_VIDEODRIVER", "wayland,x11")
 
@@ -41,19 +44,20 @@ programInit :: proc(title: string) -> (program: Program) {
 
 programMainLoop :: proc(program: ^Program) {
 
+    state := &world.state
+
     pixels: [dynamic]u32
     resize(&pixels, state.width * state.height)
     defer delete(pixels)
 
-    worldGrid: [dynamic]u16
-    resize(&worldGrid, 1028* 1028)
-    defer delete(worldGrid)
+    worldGrid: = world.gridInit(128, 128)
+    defer world.gridFree(&worldGrid)
 
     for state.running {   
         eventHandling(&program.event, program.window, 0)
 
-        if state.topDown == true { topDownDrawer(pixels) }
-        else { sideViewDrawer(pixels) }
+        if state.topDown == true { graphics.topDownDrawer(pixels, &worldGrid) }
+        else { graphics.sideViewDrawer(pixels) }
 
         SDL.UpdateTexture(program.texture, nil, raw_data(pixels), state.width * size_of(u32))
 

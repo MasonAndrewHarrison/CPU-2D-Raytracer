@@ -2,7 +2,7 @@
 
 
 run: 
-	odin run ../CPU-2D-Raytracer 
+	odin run src
 
 debug:
-	odin run ../CPU-2D-Raytracer -debug -sanitize:address
+	odin run src -debug -sanitize:address
