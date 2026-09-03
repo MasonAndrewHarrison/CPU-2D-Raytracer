@@ -50,7 +50,8 @@ programMainLoop :: proc(program: ^Program) {
     resize(&pixels, state.width * state.height)
     defer delete(pixels)
 
-    worldGrid: = world.gridInit(128, 128)
+    worldGrid: = world.gridInit(8, 8)   
+    world.gridLoad(&worldGrid, "..")
     defer world.gridFree(&worldGrid)
 
     for state.running {   

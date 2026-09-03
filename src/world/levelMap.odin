@@ -1,5 +1,11 @@
 package world
 
+import "core:path/filepath"
+import "core:math/rand"
+import "core:fmt"
+
+BLOCK_WIDTH :: 8
+
 Grid :: struct {
     blocks: [dynamic]u64,
     width: int,
@@ -7,19 +13,59 @@ Grid :: struct {
 }
 
 
-gridInit :: proc(width: int, height: int) -> (gridLevel: Grid) {
+gridInit :: proc(width: int, height: int) -> (levelMap: Grid) {
 
-    gridLevel = {
-        height = 128,   
-        width = 128,
+    levelMap = {
+        height = height * BLOCK_WIDTH,   
+        width = width * BLOCK_WIDTH,
     }
-    resize(&gridLevel.blocks, gridLevel.height * gridLevel.width)
-    gridLevel.blocks[1] = 1
-
-    return gridLevel
+    resize(&levelMap.blocks, height * width)
+    
+    return levelMap
 }
 
-gridFree :: proc(gridLevel: ^Grid) {
+gridFree :: proc(levelMap: ^Grid) {
 
-    delete(gridLevel.blocks)
+    delete(levelMap.blocks)
+}
+
+gridGetBlockIndex :: proc(levelMap: ^Grid, x: int, y: int) -> (index: int){
+
+    return x * levelMap.width/BLOCK_WIDTH + y
+}
+
+gridGetHit :: proc(levelMap: ^Grid, x: int, y: int) -> (hit: bool) {
+
+    gridX: = int(x/BLOCK_WIDTH)
+    gridY: = int(y/BLOCK_WIDTH)
+
+    blockX: = int(x % BLOCK_WIDTH)
+    blockY: = int(y % BLOCK_WIDTH)
+    bit: = u8(blockX * BLOCK_WIDTH + blockY)
+
+    return levelMap.blocks[gridGetBlockIndex(levelMap, gridX, gridY)] & (1 << bit) > 0
+}
+
+gridSetHit :: proc(levelMap: ^Grid, x: int, y: int) {
+
+    gridX: = int(x/BLOCK_WIDTH)
+    gridY: = int(y/BLOCK_WIDTH)
+
+    blockX: = int(x % BLOCK_WIDTH)
+    blockY: = int(y % BLOCK_WIDTH)
+    bit: = u8(blockX * BLOCK_WIDTH + blockY)
+
+    levelMap.blocks[gridGetBlockIndex(levelMap, gridX, gridY)] |= (1 << bit)
+}
+
+gridLoad :: proc(levelMap: ^Grid, filepath: string) {
+
+    for x in 0..<levelMap.width {
+        for y in 0..<levelMap.width {
+
+            if ( y % 10 < 5 && x % 10 < 5){
+                gridSetHit(levelMap, x, y) 
+            }
+        }
+    }
 }
