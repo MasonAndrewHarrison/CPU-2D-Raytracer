@@ -99,7 +99,7 @@ topDownDrawer :: proc(pixels: [dynamic]u32, worldGrid: ^world.Grid){
 
             y = ((i - imageYStart) / imagePixelSize)
             x = ((j - imageXStart) / imagePixelSize)
-            //color = bilinearInterpolationHitMap(worldGrid, x, y)
+            color = bilinearInterpolationHitMap(worldGrid, x, y)
             color = bilinearInterpolationDebugMap(worldGrid, x, y)
 
             pixels[int(i) * int(state.width) + int(j)] = color

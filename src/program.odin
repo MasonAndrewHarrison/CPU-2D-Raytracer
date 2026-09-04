@@ -53,8 +53,9 @@ programMainLoop :: proc(program: ^Program) {
 
     player: entity.Player
 
+
     levelMap: = world.gridInit(32, 32)   
-    defer world.gridFree(&levelMap)
+    defer world.gridFree(&levelMap) 
 
     world.gridLoad(&levelMap, "..")
     world.addPlayer(&levelMap, &player, true)

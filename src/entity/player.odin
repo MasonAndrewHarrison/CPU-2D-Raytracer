@@ -1,5 +1,6 @@
 package entity
 
+import "core:math"
 
 Player :: struct {
 

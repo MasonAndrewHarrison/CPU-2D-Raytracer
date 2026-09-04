@@ -41,18 +41,6 @@ gridGetBlockHitIndex :: proc(levelMap: ^Grid, x: int, y: int) -> (index: int){
     return x * levelMap.width/BLOCK_LENGTH + y
 }
 
-gridGetBlockIndex :: proc(levelMap: ^Grid, x: int, y: int) -> (index: int){
-    return x * levelMap.width + y
-}
-
-gridGetDebugValue :: proc(levelMap: ^Grid, x: int, y: int) -> (value: u8){
-    return levelMap.debugValue[gridGetBlockIndex(levelMap, x, y)]
-}
-
-gridSetDebugValue :: proc(levelMap: ^Grid, x: int, y: int, debugValue: u8){
-    levelMap.debugValue[gridGetBlockIndex(levelMap, x, y)] = debugValue
-}
-
 gridGetHit :: proc(levelMap: ^Grid, x: int, y: int) -> (hit: bool) {
 
     gridX: = int(x/BLOCK_LENGTH)
@@ -63,6 +51,18 @@ gridGetHit :: proc(levelMap: ^Grid, x: int, y: int) -> (hit: bool) {
     bit: = u8(blockX * BLOCK_LENGTH + blockY)
 
     return levelMap.blocks[gridGetBlockHitIndex(levelMap, gridX, gridY)] & (1 << bit) > 0
+}
+
+gridGetBlockIndex :: proc(levelMap: ^Grid, x: int, y: int) -> (index: int){
+    return x * levelMap.width + y
+}
+
+gridGetDebugValue :: proc(levelMap: ^Grid, x: int, y: int) -> (value: u8){
+    return levelMap.debugValue[gridGetBlockIndex(levelMap, x, y)]
+}
+
+gridSetDebugValue :: proc(levelMap: ^Grid, x: int, y: int, debugValue: u8){
+    levelMap.debugValue[gridGetBlockIndex(levelMap, x, y)] = debugValue
 }
 
 gridSetHit :: proc(levelMap: ^Grid, x: int, y: int) {
@@ -106,7 +106,7 @@ gridAddSphere :: proc(levelMap: ^Grid, x: f32, y: f32, radius: f32){
 
 addPlayer :: proc(levelMap: ^Grid, player: ^entity.Player, centerPlayer: bool){
     if centerPlayer {
-        player.x = f32(levelMap.width) /2
+        player.x = f32(levelMap.width) /2   
         player.y = f32(levelMap.height) /2
     }
     levelMap.player = player

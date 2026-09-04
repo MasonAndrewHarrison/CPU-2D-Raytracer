@@ -1,8 +1,9 @@
-package main
+package main 
 
 import "core:fmt" 
 import "world"
 import "entity"
+import "core:math"
 import SDL "vendor:sdl3"
 
 eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) {
@@ -23,7 +24,7 @@ eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) 
             SDL.GetWindowSizeInPixels(program.window, &state.width, &state.height)
         }     
     }
-    eventButtomHold(keyBoard, levelMap.player, 0)
+    eventButtomHold(keyBoard, levelMap, 0)
 }
 
 eventButtonPress :: proc(event: ^SDL.Event){
@@ -64,18 +65,18 @@ eventMouseMotion :: proc(event: ^SDL.Event, levelMap: ^world.Grid){
 eventMouseWheel :: proc(event: ^SDL.Event){
 }
 
-eventButtomHold :: proc(keyBoard: [^]bool, player: ^entity.Player, deltaTime: f64){
+eventButtomHold :: proc(keyBoard: [^]bool, levelMap: ^world.Grid, deltaTime: f64){
 
     if keyBoard[SDL.Scancode.W] {
-        player.y -= 1
+        playerMove(levelMap.player, levelMap, 1, -math.PI/2)
     }
     if keyBoard[SDL.Scancode.S] {
-        player.y += 1   
+        playerMove(levelMap.player, levelMap, 1, math.PI/2)  
     }
     if keyBoard[SDL.Scancode.A] {
-        player.x -= 1
+        playerMove(levelMap.player, levelMap, 1, math.PI)  
     }
     if keyBoard[SDL.Scancode.D] {
-        player.x += 1
+        playerMove(levelMap.player, levelMap, 1, 0)  
     }
 }
