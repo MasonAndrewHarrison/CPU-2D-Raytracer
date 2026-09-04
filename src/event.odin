@@ -2,28 +2,28 @@ package main
 
 import "core:fmt" 
 import "world"
+import "entity"
 import SDL "vendor:sdl3"
 
-eventHandling :: proc(event: ^SDL.Event, window: ^SDL.Window, deltaTime: f64) {
+eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) {
 
     state := &world.state
-
-    for SDL.PollEvent(event) {
-        #partial switch event.type {
+    keyBoard: = SDL.GetKeyboardState(nil)
+    for SDL.PollEvent(&program.event) {
+        #partial switch program.event.type {
         case .QUIT:
             state.running = false
         case .KEY_DOWN:
-            eventButtonPress(event)
+            eventButtonPress(&program.event)
         case .MOUSE_MOTION:
-            eventMouseMotion(event)
+            eventMouseMotion(&program.event, levelMap)
         case .MOUSE_WHEEL:
-            eventMouseWheel(event)
+            eventMouseWheel(&program.event)
         case .WINDOW_RESIZED:
-            SDL.GetWindowSizeInPixels(window, &state.width, &state.height)
+            SDL.GetWindowSizeInPixels(program.window, &state.width, &state.height)
         }     
     }
-    eventButtomHold(0)
-
+    eventButtomHold(keyBoard, levelMap.player, 0)
 }
 
 eventButtonPress :: proc(event: ^SDL.Event){
@@ -41,16 +41,41 @@ eventButtonPress :: proc(event: ^SDL.Event){
     }
 }
 
-eventMouseMotion :: proc(event: ^SDL.Event){
+eventMouseMotion :: proc(event: ^SDL.Event, levelMap: ^world.Grid){
 
     state := &world.state
-
     mouseButtonFlags:= SDL.GetMouseState(&state.mouseX, &state.mouseY)
+
+    imagePixelSize: = f32(state.height)*state.mapImagePercentage
+    imageXStart: = (f32(state.width) - imagePixelSize)/2
+    imageYStart: = (f32(state.height) - imagePixelSize)/2
+
+    y: f32 = ((state.mouseY - imageYStart) / imagePixelSize) * f32(levelMap.height-1)
+    x: f32 = ((state.mouseX - imageXStart) / imagePixelSize) * f32(levelMap.width-1)
+    
+    if .LEFT in mouseButtonFlags{
+
+        if state.topDown && x > 0 && y > 0 && x < f32(levelMap.width) && y < f32(levelMap.height){
+            world.gridAddSphere(levelMap, x, y, 1)
+        } 
+    }
 }
 
 eventMouseWheel :: proc(event: ^SDL.Event){
 }
 
-eventButtomHold :: proc(deltaTime: f64){
+eventButtomHold :: proc(keyBoard: [^]bool, player: ^entity.Player, deltaTime: f64){
 
+    if keyBoard[SDL.Scancode.W] {
+        player.y -= 1
+    }
+    if keyBoard[SDL.Scancode.S] {
+        player.y += 1   
+    }
+    if keyBoard[SDL.Scancode.A] {
+        player.x -= 1
+    }
+    if keyBoard[SDL.Scancode.D] {
+        player.x += 1
+    }
 }

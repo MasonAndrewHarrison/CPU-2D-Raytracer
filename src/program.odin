@@ -4,6 +4,7 @@ import SDL "vendor:sdl3"
 import "core:fmt"
 import "core:os"
 import "graphics"
+import "entity"
 import "world"
 
 Program :: struct {
@@ -50,14 +51,20 @@ programMainLoop :: proc(program: ^Program) {
     resize(&pixels, state.width * state.height)
     defer delete(pixels)
 
-    worldGrid: = world.gridInit(8, 8)   
-    world.gridLoad(&worldGrid, "..")
-    defer world.gridFree(&worldGrid)
+    player: entity.Player
+
+    levelMap: = world.gridInit(32, 32)   
+    defer world.gridFree(&levelMap)
+
+    world.gridLoad(&levelMap, "..")
+    world.addPlayer(&levelMap, &player, true)
+    
 
     for state.running {   
-        eventHandling(&program.event, program.window, 0)
+        eventHandling(program, &levelMap, 0)
+        world.updateDebugMap(&levelMap)
 
-        if state.topDown == true { graphics.topDownDrawer(pixels, &worldGrid) }
+        if state.topDown == true { graphics.topDownDrawer(pixels, &levelMap) }
         else { graphics.sideViewDrawer(pixels) }
 
         SDL.UpdateTexture(program.texture, nil, raw_data(pixels), state.width * size_of(u32))

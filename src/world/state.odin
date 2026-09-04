@@ -7,6 +7,7 @@ State :: struct {
     topDown: bool,
     mouseX: f32,
     mouseY: f32,
+    mapImagePercentage: f32
 }
 state: State
 
@@ -20,6 +21,7 @@ stateInit :: proc(width: i32 = 600, height: i32 = 400) {
         topDown  = false,
         mouseX   = 0,
         mouseY   = 0,
+        mapImagePercentage = 0.9
     }
 
 }
