@@ -2,7 +2,6 @@ package main
 
 import "core:fmt" 
 import "world"
-import "entity"
 import "core:math"
 import SDL "vendor:sdl3"
 
@@ -68,15 +67,15 @@ eventMouseWheel :: proc(event: ^SDL.Event){
 eventButtomHold :: proc(keyBoard: [^]bool, levelMap: ^world.Grid, deltaTime: f64){
 
     if keyBoard[SDL.Scancode.W] {
-        playerMove(levelMap.player, levelMap, 1, -math.PI/2)
+        world.playerMove(&levelMap.player, levelMap, 1, -math.PI/2)
     }
     if keyBoard[SDL.Scancode.S] {
-        playerMove(levelMap.player, levelMap, 1, math.PI/2)  
+        world.playerMove(&levelMap.player, levelMap, 1, math.PI/2)  
     }
     if keyBoard[SDL.Scancode.A] {
-        playerMove(levelMap.player, levelMap, 1, math.PI)  
+        world.playerMove(&levelMap.player, levelMap, 1, math.PI)  
     }
     if keyBoard[SDL.Scancode.D] {
-        playerMove(levelMap.player, levelMap, 1, 0)  
+        world.playerMove(&levelMap.player, levelMap, 1, 0)  
     }
 }

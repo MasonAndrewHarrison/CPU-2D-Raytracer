@@ -3,10 +3,17 @@ package world
 
 import "core:path/filepath"
 import "core:math/rand"
+import "core:math"
 import "core:fmt"
-import "../entity"
 
 BLOCK_LENGTH :: 8
+
+Player :: struct {
+
+    x: f32,
+    y: f32,
+    direction: f32,
+}
 
 Grid :: struct {
     blocks: [dynamic]u64,
@@ -14,7 +21,7 @@ Grid :: struct {
     width: int,
     height: int,
     blockLength: int, 
-    player: ^entity.Player,
+    player: Player,
 }
 
 
@@ -27,6 +34,10 @@ gridInit :: proc(width: int, height: int) -> (levelMap: Grid) {
     }
     resize(&levelMap.blocks, height * width)
     resize(&levelMap.debugValue, height*BLOCK_LENGTH * width*BLOCK_LENGTH)
+
+    levelMap.player.x = f32(width * BLOCK_LENGTH) /2  
+    levelMap.player.y = f32(height * BLOCK_LENGTH) /2
+    levelMap.player.direction = 0
     
     return levelMap
 }
@@ -34,7 +45,7 @@ gridInit :: proc(width: int, height: int) -> (levelMap: Grid) {
 gridFree :: proc(levelMap: ^Grid) {
 
     delete(levelMap.blocks)
-    delete(levelMap.blocks)
+    delete(levelMap.debugValue)
 }
 
 gridGetBlockHitIndex :: proc(levelMap: ^Grid, x: int, y: int) -> (index: int){
@@ -103,15 +114,6 @@ gridAddSphere :: proc(levelMap: ^Grid, x: f32, y: f32, radius: f32){
 
 }
 
-
-addPlayer :: proc(levelMap: ^Grid, player: ^entity.Player, centerPlayer: bool){
-    if centerPlayer {
-        player.x = f32(levelMap.width) /2   
-        player.y = f32(levelMap.height) /2
-    }
-    levelMap.player = player
-}
-
 clearDebugValue :: proc(levelMap: ^Grid, debugValue: u8){
 
     for x in 0..<levelMap.width {
@@ -124,8 +126,22 @@ clearDebugValue :: proc(levelMap: ^Grid, debugValue: u8){
     }
 }
 
+
 updateDebugMap :: proc(levelMap: ^Grid){
 
     clearDebugValue(levelMap, 3)
     gridSetDebugValue(levelMap, int(levelMap.player.x), int(levelMap.player.y), 3)
+}
+
+playerMove :: proc(player: ^Player, levelMap: ^Grid, distance: f32, angle: f32){
+    tempX: f32 = player.x + distance*math.cos(angle + player.direction)
+    tempY: f32 = player.y + distance*math.sin(angle + player.direction)
+
+    xInBounds: bool = tempX >= 0 && tempX < f32(levelMap.width) -1
+    yInBounds: bool = tempY >= 0 && tempY < f32(levelMap.height) -1
+
+    if (!gridGetHit(levelMap, int(tempX), int(tempY)) && yInBounds && xInBounds){
+        player.x = tempX
+        player.y = tempY
+    }
 }
