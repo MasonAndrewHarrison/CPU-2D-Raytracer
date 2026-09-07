@@ -37,7 +37,7 @@ gridInit :: proc(width: int, height: int) -> (levelMap: Grid) {
 
     levelMap.player.x = f32(width * BLOCK_LENGTH) /2  
     levelMap.player.y = f32(height * BLOCK_LENGTH) /2
-    levelMap.player.direction = 0
+    levelMap.player.direction = -math.PI/2
     
     return levelMap
 }
@@ -54,6 +54,8 @@ gridGetBlockHitIndex :: proc(levelMap: ^Grid, x: int, y: int) -> (index: int){
 
 gridGetHit :: proc(levelMap: ^Grid, x: int, y: int) -> (hit: bool) {
 
+    x := math.clamp(x, 0, levelMap.width*levelMap.blockLength)
+    y := math.clamp(y, 0, levelMap.height*levelMap.blockLength)
     gridX: = int(x/BLOCK_LENGTH)
     gridY: = int(y/BLOCK_LENGTH)
 

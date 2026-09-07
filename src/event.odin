@@ -44,7 +44,12 @@ eventButtonPress :: proc(event: ^SDL.Event){
 eventMouseMotion :: proc(event: ^SDL.Event, levelMap: ^world.Grid){
 
     state := &world.state
+    sensitivity:f32 = 0.002
+
     mouseButtonFlags:= SDL.GetMouseState(&state.mouseX, &state.mouseY)
+    if !state.topDown {
+        levelMap.player.direction += f32(event.motion.xrel) * sensitivity
+    }
 
     imagePixelSize: = f32(state.height)*state.mapImagePercentage
     imageXStart: = (f32(state.width) - imagePixelSize)/2
@@ -56,9 +61,9 @@ eventMouseMotion :: proc(event: ^SDL.Event, levelMap: ^world.Grid){
     if .LEFT in mouseButtonFlags{
 
         if state.topDown && x > 0 && y > 0 && x < f32(levelMap.width) && y < f32(levelMap.height){
-            world.gridAddSphere(levelMap, x, y, 1)
+            world.gridAddSphere(levelMap, x, y, 4)
         } 
-    }
+    }   
 }
 
 eventMouseWheel :: proc(event: ^SDL.Event){
@@ -66,16 +71,17 @@ eventMouseWheel :: proc(event: ^SDL.Event){
 
 eventButtomHold :: proc(keyBoard: [^]bool, levelMap: ^world.Grid, deltaTime: f64){
 
-    if keyBoard[SDL.Scancode.W] {
-        world.playerMove(&levelMap.player, levelMap, 1, -math.PI/2)
-    }
-    if keyBoard[SDL.Scancode.S] {
-        world.playerMove(&levelMap.player, levelMap, 1, math.PI/2)  
-    }
+    speed::0.25
     if keyBoard[SDL.Scancode.A] {
-        world.playerMove(&levelMap.player, levelMap, 1, math.PI)  
+        world.playerMove(&levelMap.player, levelMap, speed, -math.PI/2)
     }
     if keyBoard[SDL.Scancode.D] {
-        world.playerMove(&levelMap.player, levelMap, 1, 0)  
+        world.playerMove(&levelMap.player, levelMap, speed, math.PI/2)  
+    }
+    if keyBoard[SDL.Scancode.S] {
+        world.playerMove(&levelMap.player, levelMap, speed, math.PI)  
+    }
+    if keyBoard[SDL.Scancode.W] {
+        world.playerMove(&levelMap.player, levelMap, speed, 0)  
     }
 }

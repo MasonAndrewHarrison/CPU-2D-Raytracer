@@ -50,7 +50,7 @@ programMainLoop :: proc(program: ^Program) {
     resize(&pixels, state.width * state.height)
     defer delete(pixels)
 
-    worldMap: = world.worldInit(16)
+    worldMap: = world.worldInit(12)
     defer world.worldFree(&worldMap)
     
 
@@ -59,7 +59,7 @@ programMainLoop :: proc(program: ^Program) {
         world.worldUpdate(&worldMap)
 
         if state.topDown == true { graphics.topDownDrawer(pixels, world.getCurrentLevel(&worldMap)) }
-        else { graphics.sideViewDrawer(pixels) }
+        else { graphics.sideViewDrawer(pixels, &worldMap) }
 
         SDL.UpdateTexture(program.texture, nil, raw_data(pixels), state.width * size_of(u32))
 
