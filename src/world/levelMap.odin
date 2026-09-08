@@ -95,7 +95,7 @@ gridLoad :: proc(levelMap: ^Grid, filepath: string) {
     for x in 0..<levelMap.width {
         for y in 0..<levelMap.width {
 
-            if ( y % 10 < 5 && x % 10 < 5){
+            if ( y % 15 < 5 && x % 15 < 5){
                 gridSetDebugValue(levelMap, x, y, 2)
                 gridSetHit(levelMap, x, y) 
             }

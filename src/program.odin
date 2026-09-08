@@ -39,6 +39,8 @@ programInit :: proc(title: string) -> (program: Program) {
         fmt.eprintln("CreateTexture failed:", SDL.GetError())
     }
 
+    result := SDL.SetWindowRelativeMouseMode(program.window, true)
+
     return program
 }
 
@@ -50,16 +52,18 @@ programMainLoop :: proc(program: ^Program) {
     resize(&pixels, state.width * state.height)
     defer delete(pixels)
 
-    worldMap: = world.worldInit(12)
+    worldMap: = world.worldInit(32)
     defer world.worldFree(&worldMap)
     
+    horizonalBuffer: [dynamic][2]f32 = world.horizonalBufferInit(int(state.width))
+    defer world.horizonalBufferFree(horizonalBuffer)
 
     for state.running {   
         eventHandling(program, world.getCurrentLevel(&worldMap), 0)
         world.worldUpdate(&worldMap)
 
         if state.topDown == true { graphics.topDownDrawer(pixels, world.getCurrentLevel(&worldMap)) }
-        else { graphics.sideViewDrawer(pixels, &worldMap) }
+        else { graphics.sideViewDrawer(pixels, horizonalBuffer, &worldMap) }
 
         SDL.UpdateTexture(program.texture, nil, raw_data(pixels), state.width * size_of(u32))
 

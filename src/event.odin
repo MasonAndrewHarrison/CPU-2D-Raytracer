@@ -14,7 +14,7 @@ eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) 
         case .QUIT:
             state.running = false
         case .KEY_DOWN:
-            eventButtonPress(&program.event)
+            eventButtonPress(&program.event, program.window)
         case .MOUSE_MOTION:
             eventMouseMotion(&program.event, levelMap)
         case .MOUSE_WHEEL:
@@ -26,7 +26,7 @@ eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) 
     eventButtomHold(keyBoard, levelMap, 0)
 }
 
-eventButtonPress :: proc(event: ^SDL.Event){
+eventButtonPress :: proc(event: ^SDL.Event, window: ^SDL.Window){
 
     state := &world.state
 
@@ -37,6 +37,7 @@ eventButtonPress :: proc(event: ^SDL.Event){
 
         case SDL.K_TAB:
             state.topDown = !state.topDown
+            result := SDL.SetWindowRelativeMouseMode(window, !state.topDown)
 
     }
 }
@@ -71,12 +72,12 @@ eventMouseWheel :: proc(event: ^SDL.Event){
 
 eventButtomHold :: proc(keyBoard: [^]bool, levelMap: ^world.Grid, deltaTime: f64){
 
-    speed::0.25
+    speed::0.40
     if keyBoard[SDL.Scancode.A] {
-        world.playerMove(&levelMap.player, levelMap, speed, -math.PI/2)
+        world.playerMove(&levelMap.player, levelMap, speed/2, -math.PI/2)
     }
     if keyBoard[SDL.Scancode.D] {
-        world.playerMove(&levelMap.player, levelMap, speed, math.PI/2)  
+        world.playerMove(&levelMap.player, levelMap, speed/2, math.PI/2)  
     }
     if keyBoard[SDL.Scancode.S] {
         world.playerMove(&levelMap.player, levelMap, speed, math.PI)  

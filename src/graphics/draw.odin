@@ -6,17 +6,17 @@ import "core:fmt"
 import "core:math"
 import "core:math/linalg"
 
-sideViewDrawer :: proc(pixels: [dynamic]u32, worldMap: ^world.World){
+sideViewDrawer :: proc(pixels: [dynamic]u32, horizonalBuffer: [dynamic][2]f32, worldMap: ^world.World){
 
     state := &world.state
-    horizonalBuffer := world.renderHorizonalBuffer(worldMap, int(state.width), math.PI/4)
+    world.renderHorizonalBuffer(worldMap, horizonalBuffer, math.PI/3)
     playerPos: [2]f32 = {world.getCurrentLevel(worldMap).player.x, world.getCurrentLevel(worldMap).player.y}
 
     clearAllPixel(pixels)
 
     for x in 0..<state.width {
         distance := linalg.distance(horizonalBuffer[x], playerPos)
-        wallHeight := math.clamp(int(800/distance), 0, int(state.height/2))
+        wallHeight := math.clamp(int(1500/distance), 0, int(state.height/2))
 
         pixelColumnDrawer(int(x), pixels, int(state.height/2)-wallHeight, int(state.height/2)+wallHeight)
     }
