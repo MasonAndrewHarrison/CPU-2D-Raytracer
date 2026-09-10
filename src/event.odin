@@ -5,7 +5,7 @@ import "world"
 import "core:math"
 import SDL "vendor:sdl3"
 
-eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) {
+eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f32) {
 
     state := &world.state
     keyBoard: = SDL.GetKeyboardState(nil)
@@ -23,7 +23,7 @@ eventHandling :: proc(program: ^Program, levelMap: ^world.Grid, deltaTime: f64) 
             SDL.GetWindowSizeInPixels(program.window, &state.width, &state.height)
         }     
     }
-    eventButtomHold(keyBoard, levelMap, 0)
+    eventButtomHold(keyBoard, levelMap, deltaTime)
 }
 
 eventButtonPress :: proc(event: ^SDL.Event, window: ^SDL.Window){
@@ -70,19 +70,19 @@ eventMouseMotion :: proc(event: ^SDL.Event, levelMap: ^world.Grid){
 eventMouseWheel :: proc(event: ^SDL.Event){
 }
 
-eventButtomHold :: proc(keyBoard: [^]bool, levelMap: ^world.Grid, deltaTime: f64){
+eventButtomHold :: proc(keyBoard: [^]bool, levelMap: ^world.Grid, deltaTime: f32){
 
-    speed::0.40
+    speed :: 30
     if keyBoard[SDL.Scancode.A] {
-        world.playerMove(&levelMap.player, levelMap, speed/2, -math.PI/2)
+        world.playerMove(&levelMap.player, levelMap, speed/2 * deltaTime, -math.PI/2)
     }
     if keyBoard[SDL.Scancode.D] {
-        world.playerMove(&levelMap.player, levelMap, speed/2, math.PI/2)  
+        world.playerMove(&levelMap.player, levelMap, speed/2 * deltaTime, math.PI/2)  
     }
     if keyBoard[SDL.Scancode.S] {
-        world.playerMove(&levelMap.player, levelMap, speed, math.PI)  
+        world.playerMove(&levelMap.player, levelMap, speed * deltaTime, math.PI)  
     }
     if keyBoard[SDL.Scancode.W] {
-        world.playerMove(&levelMap.player, levelMap, speed, 0)  
+        world.playerMove(&levelMap.player, levelMap, speed * deltaTime, 0)  
     }
 }

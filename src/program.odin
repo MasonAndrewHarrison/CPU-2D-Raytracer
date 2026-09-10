@@ -11,6 +11,9 @@ Program :: struct {
     renderer: ^SDL.Renderer,
     texture: ^SDL.Texture,
     event: SDL.Event,
+    horizonalBuffer: [dynamic][2]f32,
+    pixels: [dynamic]u32,
+    worldMap: world.World,
 }
 
 @(require_results)
@@ -41,6 +44,10 @@ programInit :: proc(title: string) -> (program: Program) {
 
     result := SDL.SetWindowRelativeMouseMode(program.window, true)
 
+    resize(&program.pixels, state.width * state.height)
+    program.worldMap = world.worldInit(32)
+    program.horizonalBuffer = world.horizonalBufferInit(int(state.width))
+
     return program
 }
 
@@ -48,24 +55,34 @@ programMainLoop :: proc(program: ^Program) {
 
     state := &world.state
 
-    pixels: [dynamic]u32
-    resize(&pixels, state.width * state.height)
-    defer delete(pixels)
-
-    worldMap: = world.worldInit(32)
-    defer world.worldFree(&worldMap)
-    
-    horizonalBuffer: [dynamic][2]f32 = world.horizonalBufferInit(int(state.width))
-    defer world.horizonalBufferFree(horizonalBuffer)
+    deltaTime: f32
+    lastTime: u64 = SDL.GetTicks()
+    lastTimeFPS: u64 = SDL.GetTicks()
+    curTime: u64 
+    elapsedTimeFPS: u64
+    frameCount: int = 0
 
     for state.running {   
-        eventHandling(program, world.getCurrentLevel(&worldMap), 0)
-        world.worldUpdate(&worldMap)
 
-        if state.topDown == true { graphics.topDownDrawer(pixels, world.getCurrentLevel(&worldMap)) }
-        else { graphics.sideViewDrawer(pixels, horizonalBuffer, &worldMap) }
+        curTime = SDL.GetTicks()
+        deltaTime = f32(curTime - lastTime)/1000
+        lastTime = curTime
 
-        SDL.UpdateTexture(program.texture, nil, raw_data(pixels), state.width * size_of(u32))
+        frameCount += 1
+        elapsedTimeFPS = curTime - lastTimeFPS
+        if elapsedTimeFPS >= 1000 {
+            fmt.println(f32(frameCount * 1000) / f32(elapsedTimeFPS))
+            frameCount = 0
+            lastTimeFPS = curTime
+        }
+
+        eventHandling(program, world.getCurrentLevel(&program.worldMap), deltaTime)
+        world.worldUpdate(&program.worldMap)
+
+        if state.topDown == true { graphics.topDownDrawer(program.pixels, world.getCurrentLevel(&program.worldMap)) }
+        else { graphics.sideViewDrawer(program.pixels, program.horizonalBuffer, &program.worldMap) }
+
+        SDL.UpdateTexture(program.texture, nil, raw_data(program.pixels), state.width * size_of(u32))
 
         SDL.RenderClear(program.renderer)
         SDL.RenderTexture(program.renderer, program.texture, nil, nil)
@@ -78,4 +95,7 @@ programClose :: proc(program: ^Program) {
     SDL.DestroyWindow(program.window)
     SDL.DestroyRenderer(program.renderer)
     SDL.DestroyTexture(program.texture)
+    delete(program.pixels)
+    world.worldFree(&program.worldMap)
+    world.horizonalBufferFree(program.horizonalBuffer)
 }

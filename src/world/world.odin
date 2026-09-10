@@ -1,6 +1,7 @@
 package world
 
 import "core:math"
+import "core:math/linalg"
 import "core:fmt"
 
 World :: struct {
@@ -31,6 +32,31 @@ getCurrentLevel :: proc(worldMap: ^World) -> (currentLevelMap: ^Grid){
 }
 
 
+getRayHit :: proc(levelMap: ^Grid, xOrigin: f32, yOrigin: f32, direction: f32) -> (voxelHit: [2]f32){
+
+    voxelHit.x = 100000 * math.cos(direction) + xOrigin
+    voxelHit.y = 100000 * math.sin(direction) + yOrigin
+
+    t: f32 = 0
+    step: f32 = 0.05
+    worldPos: [2]f32 = {xOrigin, yOrigin}
+
+    for i in 0..<10000 {
+        worldPos.x += step * math.cos(direction)
+        worldPos.y += step * math.sin(direction)
+        if(worldPos.x > f32(levelMap.width)-1 || worldPos.y > f32(levelMap.height)-1 || worldPos.x <= 0 || worldPos.y < 0){
+            return voxelHit
+        }
+        if(gridGetHit(levelMap, int(worldPos.x), int(worldPos.y))){ 
+            voxelHit.x = worldPos.x
+            voxelHit.y = worldPos.y
+            return voxelHit
+        }   
+    }
+
+    return voxelHit
+}
+
 getRayHitDDA :: proc(levelMap: ^Grid, xOrigin: f32, yOrigin: f32, direction: f32) -> (voxelHit: [2]f32){
 
     voxelHit.x = 100000 * math.cos(direction) + xOrigin
@@ -47,8 +73,8 @@ getRayHitDDA :: proc(levelMap: ^Grid, xOrigin: f32, yOrigin: f32, direction: f32
             return voxelHit
         }
         if(gridGetHit(levelMap, int(worldPos.x), int(worldPos.y))){ 
-            voxelHit.x = f32(int(worldPos.x))
-            voxelHit.y = f32(int(worldPos.y))
+            voxelHit.x = worldPos.x
+            voxelHit.y = worldPos.y
             return voxelHit
         }   
     }
@@ -74,7 +100,7 @@ renderHorizonalBuffer :: proc(world: ^World, horizonalBuffer: [dynamic][2]f32, p
 
     for i in 0..<resolutionWidth {
         curDirection += (pov/f32(resolutionWidth))
-        horizonalBuffer[i] = getRayHitDDA(curLevel, curPlayer.x, curPlayer.y, curDirection)
+        horizonalBuffer[i] = getRayHit(curLevel, curPlayer.x, curPlayer.y, curDirection)
     }
 
 }
