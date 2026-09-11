@@ -6,6 +6,26 @@ import "core:fmt"
 import "core:math"
 import "core:math/linalg"
 
+fastTextNoiseHash :: proc(x: int, y:int, z:f32, seed:u32) -> (hash: u32) {
+
+    xi := u32(x)
+    yi := u32(y)
+    zi := u32(z)
+
+    hash = seed
+    hash ~= xi
+    hash *= 0x85EBCA6B
+    hash ~= hash >> 13
+    hash ~= yi
+    hash *= 0xC2B2AE35
+    hash ~= hash >> 16
+    hash ~= zi
+    hash *= 0x27D4EB2F
+    hash ~= hash >> 15
+
+    return hash
+}
+
 sideViewDrawer :: proc(pixels: [dynamic]u32, horizonalBuffer: [dynamic][2]f32, worldMap: ^world.World){
 
     state := &world.state
@@ -28,9 +48,9 @@ pixelColumnDrawer :: proc(x: int, pixels: [dynamic]u32, start: int, end: int) {
 
     for y in start..<end {
 
-        color: u32 = 0xFF0000_FF
-
-        pixels[y * int(state.width) + x] = color
+        height: = 1-f32(f32(y-start)/f32(end -start))
+        intensity := f32(fastTextNoiseHash(x, y , height, 3))
+        pixels[y * int(state.width) + x] = u32(intensity)<<24 | u32(intensity)<<16 | u32(intensity)<<8 | u32(0xFF)
     }
 }
 
