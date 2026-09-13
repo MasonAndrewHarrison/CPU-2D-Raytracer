@@ -6,25 +6,7 @@ import "core:fmt"
 import "core:math"
 import "core:math/linalg"
 
-fastTextNoiseHash :: proc(x: int, y:int, z:f32, seed:u32) -> (hash: u32) {
 
-    xi := u32(x)
-    yi := u32(y)
-    zi := u32(z)
-
-    hash = seed
-    hash ~= xi
-    hash *= 0x85EBCA6B
-    hash ~= hash >> 13
-    hash ~= yi
-    hash *= 0xC2B2AE35
-    hash ~= hash >> 16
-    hash ~= zi
-    hash *= 0x27D4EB2F
-    hash ~= hash >> 15
-
-    return hash
-}
 
 sideViewDrawer :: proc(pixels: [dynamic]u32, horizonalBuffer: [dynamic][2]f32, worldMap: ^world.World){
 
@@ -38,18 +20,75 @@ sideViewDrawer :: proc(pixels: [dynamic]u32, horizonalBuffer: [dynamic][2]f32, w
         distance := linalg.distance(horizonalBuffer[x], playerPos)
         wallHeight := math.clamp(int(1500/distance), 0, int(state.height/2))
 
-        pixelColumnDrawer(int(x), pixels, int(state.height/2)-wallHeight, int(state.height/2)+wallHeight)
+        pixelColumnDrawer(int(x), pixels, int(state.height/2)-wallHeight, int(state.height/2)+wallHeight, horizonalBuffer[x])
     }
 }
 
-pixelColumnDrawer :: proc(x: int, pixels: [dynamic]u32, start: int, end: int) {
+noiseHash :: proc(x: f32, y: f32, z: f32) -> (hash: u32) {
+    xi := u32(x * 100000)
+    yi := u32(y * 100000)
+    zi := u32(z * 100000)
+
+    hash ~= xi
+    hash *= 0x85EBCA6B
+    hash ~= hash >> 13
+    hash ~= yi
+    hash *= 0xC2B2AE35
+    hash ~= hash >> 16
+    hash ~= zi
+    hash *= 0x27D4EB2F
+    hash ~= hash >> 15
+
+    return hash
+}
+
+smoothStep :: proc (x: f32) -> f32 {
+    return (x * x)*(3 - (2*x))
+}
+
+smoothNoise3d :: proc(x: f32, y: f32, z: f32) -> (value: f32) {
+
+    x0 := math.floor(x)
+    x1 := x0 + 1
+    y0 := math.floor(y)
+    y1 := y0 + 1
+    z0 := math.floor(z)
+    z1 := z0 + 1
+
+    tx := #force_inline smoothStep(x - x0)
+    ty := #force_inline smoothStep(y - y0)
+    tz := #force_inline smoothStep(z - z0)
+
+    c000 := f32(noiseHash(x0, y0, z0)) / f32(max(u32))
+    c001 := f32(noiseHash(x0, y0, z1)) / f32(max(u32))
+    c010 := f32(noiseHash(x0, y1, z0)) / f32(max(u32))
+    c011 := f32(noiseHash(x0, y1, z1)) / f32(max(u32))
+    c100 := f32(noiseHash(x1, y0, z0)) / f32(max(u32))
+    c101 := f32(noiseHash(x1, y0, z1)) / f32(max(u32))
+    c110 := f32(noiseHash(x1, y1, z0)) / f32(max(u32))
+    c111 := f32(noiseHash(x1, y1, z1)) / f32(max(u32))
+
+    x_00 := c000 * (1 - tx) + c100 * tx
+    x_01 := c001 * (1 - tx) + c101 * tx
+    x_10 := c010 * (1 - tx) + c110 * tx
+    x_11 := c011 * (1 - tx) + c111 * tx
+
+    y__0 := x_00 * (1 - ty) + x_10 * ty
+    y__1 := x_01 * (1 - ty) + x_11 * ty
+
+    z___ := y__0 * (1 - tz) + y__1 * tz
+
+    return z___
+}
+
+pixelColumnDrawer :: proc(x: int, pixels: [dynamic]u32, start: int, end: int, hitPos: [2]f32) {
 
     state := &world.state
 
     for y in start..<end {
 
         height: = 1-f32(f32(y-start)/f32(end -start))
-        intensity := f32(fastTextNoiseHash(x, y , height, 3))
+        intensity := smoothNoise3d(hitPos.x, hitPos.y, (height)) * 255
         pixels[y * int(state.width) + x] = u32(intensity)<<24 | u32(intensity)<<16 | u32(intensity)<<8 | u32(0xFF)
     }
 }
