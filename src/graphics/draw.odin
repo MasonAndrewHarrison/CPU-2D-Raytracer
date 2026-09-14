@@ -14,10 +14,15 @@ sideViewDrawer :: proc(pixels: [dynamic]u32, horizonalBuffer: [dynamic][2]f32, w
     world.renderHorizonalBuffer(worldMap, horizonalBuffer, math.PI/3)
     playerPos: [2]f32 = {world.getCurrentLevel(worldMap).player.x, world.getCurrentLevel(worldMap).player.y}
 
+    cameraVector: [2]f32
+    cameraVector.x = math.cos(world.getCurrentLevel(worldMap).player.direction)
+    cameraVector.y = math.sin(world.getCurrentLevel(worldMap).player.direction)
+    cameraVector = linalg.normalize(cameraVector)
+
     clearAllPixel(pixels)
 
-    for x in 0..<state.width {
-        distance := linalg.distance(horizonalBuffer[x], playerPos)
+    for x in 0..<state.width {  
+        distance := linalg.dot(horizonalBuffer[x]-playerPos, cameraVector)
         wallHeight := math.clamp(int(1500/distance), 0, int(state.height/2))
 
         pixelColumnDrawer(int(x), pixels, int(state.height/2)-wallHeight, int(state.height/2)+wallHeight, horizonalBuffer[x])
